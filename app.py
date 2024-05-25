@@ -16,6 +16,13 @@ import pickle
 import langchain_core
 from queue import PriorityQueue
 
+class GraphDocument(langchain_core.documents.base.Document):
+    def __init__(self, page_content, metadata):
+        super().__init__(page_content=page_content, metadata=metadata)
+
+    def __repr__(self):
+        return f"GraphDocument(page_content='{self.page_content}', metadata={self.metadata})"
+
 class GraphRAG():
     def __init__(self):
         self.graph = None
