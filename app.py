@@ -144,7 +144,7 @@ if st.session_state["input_type"] == "Text":
     if st.button("Query Graph"):
         if st.session_state["gr"] is not None:
             st.write("haha")
-            result = st.session_state["gr"].queryLLM(query)
+            result = gr.queryLLM(query)
             st.write(result)
         else:
             st.warning("Please create a graph first.")
