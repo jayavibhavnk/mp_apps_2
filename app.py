@@ -46,7 +46,7 @@ elif st.session_state["input_type"] == "PDF":
     similarity_threshold = st.sidebar.slider("Similarity Threshold", 0.0, 1.0, 0.5, 0.05)
 
     if pdf_file is not None:
-        bytes_data = uploaded_file.read()
+        bytes_data = pdf_file.read()
         if st.button("Create Graph from PDF"):
             gr = GraphRAG()
             gr.create_graph_from_pdf(bytes_data, similarity_threshold=similarity_threshold)
