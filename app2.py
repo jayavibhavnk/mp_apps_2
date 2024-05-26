@@ -110,9 +110,12 @@ generate {num_questions} questions on the topic
 topic:
 """
 
+num_q = 10
+
 # Sidebar customization options
 st.sidebar.header("Quiz Customization")
 st.session_state.num_questions = st.sidebar.slider("Number of Questions", min_value=1, max_value=25, value=5)
+num_q = st.session_state.num_questions
 st.session_state.difficulty = st.sidebar.radio("Difficulty Level", options=["Easy", "Medium", "Hard"])
 
 # Title and description
@@ -124,10 +127,11 @@ st.write("Session state:", st.session_state)
 text_area_input = st.text_area("Enter Content:")
 submit_button = st.button("Submit!")
 
+
 # Load quiz data
 if submit_button:
     st.session_state.text = text_area_input
-    query = prompt_template.format(num_questions=st.session_state.num_questions) + st.session_state.text
+    query = prompt_template.format(num_questions=num_q) + st.session_state.text
     k = query_ai(query)
     new_k = k[k.find("["):k.rfind("]") + 1]
     st.session_state.quiz_data = json.loads(new_k)
