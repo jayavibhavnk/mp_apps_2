@@ -4,19 +4,33 @@ from GraphRetrieval import GraphRAG, KnowledgeRAG, ImageGraphRAG
 from langchain_community.graphs import Neo4jGraph
 from langchain_text_splitters import CharacterTextSplitter
 
+# Initialize session state variables
+if 'neo4j_uri' not in st.session_state:
+    st.session_state['neo4j_uri'] = "add your Neo4j URI here"
+if 'neo4j_username' not in st.session_state:
+    st.session_state['neo4j_username'] = "add your Neo4j username here"
+if 'neo4j_password' not in st.session_state:
+    st.session_state['neo4j_password'] = "add your Neo4j password here"
+if 'graph_initialized' not in st.session_state:
+    st.session_state['graph_initialized'] = False
+if 'data_ingested' not in st.session_state:
+    st.session_state['data_ingested'] = False
+if 'graph_created' not in st.session_state:
+    st.session_state['graph_created'] = False
+
 # Streamlit app
 st.title("GraphRetrieval Streamlit App")
 
 # Sidebar for environment variables
 st.sidebar.header("Set Up Environment Variables")
-neo4j_uri = st.sidebar.text_input("NEO4J_URI", value="add your Neo4j URI here")
-neo4j_username = st.sidebar.text_input("NEO4J_USERNAME", value="add your Neo4j username here")
-neo4j_password = st.sidebar.text_input("NEO4J_PASSWORD", value="add your Neo4j password here", type="password")
+st.session_state['neo4j_uri'] = st.sidebar.text_input("NEO4J_URI", value=st.session_state['neo4j_uri'])
+st.session_state['neo4j_username'] = st.sidebar.text_input("NEO4J_USERNAME", value=st.session_state['neo4j_username'])
+st.session_state['neo4j_password'] = st.sidebar.text_input("NEO4J_PASSWORD", value=st.session_state['neo4j_password'], type="password")
 
 if st.sidebar.button("Set Environment Variables"):
-    os.environ["NEO4J_URI"] = neo4j_uri
-    os.environ["NEO4J_USERNAME"] = neo4j_username
-    os.environ["NEO4J_PASSWORD"] = neo4j_password
+    os.environ["NEO4J_URI"] = st.session_state['neo4j_uri']
+    os.environ["NEO4J_USERNAME"] = st.session_state['neo4j_username']
+    os.environ["NEO4J_PASSWORD"] = st.session_state['neo4j_password']
     st.sidebar.success("Environment variables set!")
 
 # Choose RAG type
@@ -29,19 +43,22 @@ if rag_type == "GraphRAG":
     # Upload text file to create graph
     uploaded_file = st.file_uploader("Choose a text file", type="txt")
 
-    if uploaded_file is not None:
+    if uploaded_file is not None and not st.session_state['graph_created']:
         text = uploaded_file.read().decode("utf-8")
         grag = GraphRAG()
         grag.create_graph_from_file(uploaded_file)
+        st.session_state['graph_created'] = True
         st.success("Graph created from uploaded file")
 
-        # Query the graph
+    # Query the graph
+    if st.session_state['graph_created']:
         st.header("Query the Graph")
         query = st.text_input("Enter your query")
 
         retrieval_model = st.selectbox("Select Retrieval Model", ["default", "greedy"])
 
         if st.button("Query"):
+            grag = GraphRAG()
             if retrieval_model == "greedy":
                 grag.retrieval_model = "greedy"
             response = grag.queryLLM(query)
@@ -51,17 +68,19 @@ if rag_type == "GraphRAG":
 elif rag_type == "KnowledgeRAG":
     st.header("KnowledgeRAG")
 
-    if st.button("Initialize Knowledge Graph"):
+    if st.button("Initialize Knowledge Graph") and not st.session_state['graph_initialized']:
         graph = Neo4jGraph()
         gr = KnowledgeRAG()
         gr.init_graph(graph)
+        st.session_state['graph_initialized'] = True
         st.success("Knowledge graph initialized")
 
-        # Ingest text into graph
+    # Ingest text into graph
+    if st.session_state['graph_initialized']:
         st.header("Ingest Text Data into Graph")
         text_data = st.text_area("Enter large text data to ingest")
 
-        if st.button("Ingest Data"):
+        if st.button("Ingest Data") and not st.session_state['data_ingested']:
             text_splitter = CharacterTextSplitter(
                 separator="\n\n",
                 chunk_size=1000,
@@ -73,9 +92,11 @@ elif rag_type == "KnowledgeRAG":
             docs = gr.generate_graph_from_text(docs1)
             gr.ingest_data_into_graph(docs)
             gr.init_neo4j_vector_index()
+            st.session_state['data_ingested'] = True
             st.success("Data ingested into knowledge graph")
 
-        # Query the knowledge graph
+    # Query the knowledge graph
+    if st.session_state['data_ingested']:
         st.header("Query the Knowledge Graph")
         knowledge_query = st.text_input("Enter your knowledge graph query")
 
@@ -83,10 +104,7 @@ elif rag_type == "KnowledgeRAG":
 
         if st.button("Query Knowledge Graph"):
             gchain = gr.graphChain()
-            if search_type == "Hybrid Search":
-                gr.hybrid = True
-            else:
-                gr.hybrid = False
+            gr.hybrid = (search_type == "Hybrid Search")
             response_kg = gchain.invoke({"question": knowledge_query})
             st.write("Knowledge Graph Response:")
             st.write(response_kg)
@@ -99,8 +117,10 @@ elif rag_type == "ImageRAG":
     if st.button("Create Image Graph"):
         image_graph_rag = ImageGraphRAG()
         image_paths = image_graph_rag.create_graph_from_directory(image_directory)
+        st.session_state['graph_created'] = True
         st.success("Image graph created from directory")
     
+    if st.session_state['graph_created']:
         # Search similar images
         uploaded_image = st.file_uploader("Upload an image to search for similar images", type=["jpg", "png"])
     
