@@ -3,3 +3,4 @@ matplotlib
 torchvision
 youtube_transcript_api
 streamlit_player
+py2neo
