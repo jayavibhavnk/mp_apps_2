@@ -105,8 +105,6 @@ example:
 
 the output has to be in json format only
 
-generate {num_questions} questions on the topic
-
 topic:
 """
 
@@ -131,7 +129,7 @@ submit_button = st.button("Submit!")
 # Load quiz data
 if submit_button:
     st.session_state.text = text_area_input
-    query = prompt_template.format(num_questions=num_q) + st.session_state.text
+    query = prompt_template + "generate " +str(num_q)+ " on the topic: " + st.session_state.text
     k = query_ai(query)
     new_k = k[k.find("["):k.rfind("]") + 1]
     st.session_state.quiz_data = json.loads(new_k)
