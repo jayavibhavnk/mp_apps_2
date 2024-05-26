@@ -120,7 +120,7 @@ st.session_state.difficulty = st.sidebar.radio("Difficulty Level", options=["Eas
 st.title("Quizzy")
 
 # Debugging prints
-st.write("Session state:", st.session_state)
+# st.write("Session state:", st.session_state)
 
 text_area_input = st.text_area("Enter Content:")
 submit_button = st.button("Submit!")
