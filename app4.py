@@ -92,38 +92,3 @@ elif rag_type == "KnowledgeRAG":
             response_kg = gchain.invoke({"question": knowledge_query})
             st.write("Knowledge Graph Response:")
             st.write(response_kg)
-
-# Image Graph RAG Section
-st.header("Image Graph RAG")
-image_directory = st.text_input("Enter the directory path for images")
-
-if st.button("Create Image Graph"):
-    image_graph_rag = ImageGraphRAG()
-    image_paths = image_graph_rag.create_graph_from_directory(image_directory)
-    st.success("Image graph created from directory")
-
-    # Search similar images
-    uploaded_image = st.file_uploader("Upload an image to search for similar images", type=["jpg", "png"])
-
-    if uploaded_image is not None:
-        import tempfile
-
-        with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-            tmp_file.write(uploaded_image.read())
-            tmp_file_path = tmp_file.name
-
-        similar_images = image_graph_rag.similarity_search(tmp_file_path, k=5)
-        st.header("Similar Images")
-
-        for doc in similar_images:
-            st.image(doc.metadata["path"], caption=doc.metadata["path"])
-
-        # Visualize graph
-        if st.button("Visualize Image Graph"):
-            image_graph_rag.visualize_graph()
-            st.success("Image graph visualized")
-
-st.write("#### Contributing")
-st.write("Contributions are welcome! Please submit a pull request or open an issue to discuss what you would like to change.")
-st.write("#### License")
-st.write("This project is licensed under the MIT License. See the LICENSE file for details.")
