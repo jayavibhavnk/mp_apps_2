@@ -116,8 +116,8 @@ if st.session_state.b:
     k = query_ai(prompt_template + st.session_state.text)
     import json
     new_k = k[k.find("["):k.rfind("]") + 1]
-    if new_k:
-        st.write(new_k)
+    # if new_k:
+    #     st.write(new_k)
     st.session_state.quiz_data = json.loads(new_k)
 
 # Check if quiz_data is available
@@ -154,6 +154,7 @@ if st.session_state.quiz_data:
             if st.button(option, key=f"option_{option}", use_container_width=True):
                 st.session_state.selected_option = option
 
+    st.write(question_item['information'])
     st.markdown("""___""")
 
     # Submission button and response logic
