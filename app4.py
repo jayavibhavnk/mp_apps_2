@@ -17,6 +17,12 @@ if 'data_ingested' not in st.session_state:
     st.session_state['data_ingested'] = False
 if 'graph_created' not in st.session_state:
     st.session_state['graph_created'] = False
+if 'grag' not in st.session_state:
+    st.session_state['grag'] = None
+if 'gr' not in st.session_state:
+    st.session_state['gr'] = None
+if 'image_graph_rag' not in st.session_state:
+    st.session_state['image_graph_rag'] = None
 
 # Streamlit app
 st.title("GraphRetrieval Streamlit App")
@@ -45,8 +51,8 @@ if rag_type == "GraphRAG":
 
     if uploaded_file is not None and not st.session_state['graph_created']:
         text = uploaded_file.read().decode("utf-8")
-        grag = GraphRAG()
-        grag.create_graph_from_file(uploaded_file)
+        st.session_state['grag'] = GraphRAG()
+        st.session_state['grag'].create_graph_from_file(uploaded_file)
         st.session_state['graph_created'] = True
         st.success("Graph created from uploaded file")
 
@@ -58,10 +64,9 @@ if rag_type == "GraphRAG":
         retrieval_model = st.selectbox("Select Retrieval Model", ["default", "greedy"])
 
         if st.button("Query"):
-            grag = GraphRAG()
             if retrieval_model == "greedy":
-                grag.retrieval_model = "greedy"
-            response = grag.queryLLM(query)
+                st.session_state['grag'].retrieval_model = "greedy"
+            response = st.session_state['grag'].queryLLM(query)
             st.write("Response:")
             st.write(response)
 
@@ -70,8 +75,8 @@ elif rag_type == "KnowledgeRAG":
 
     if st.button("Initialize Knowledge Graph") and not st.session_state['graph_initialized']:
         graph = Neo4jGraph()
-        gr = KnowledgeRAG()
-        gr.init_graph(graph)
+        st.session_state['gr'] = KnowledgeRAG()
+        st.session_state['gr'].init_graph(graph)
         st.session_state['graph_initialized'] = True
         st.success("Knowledge graph initialized")
 
@@ -89,9 +94,9 @@ elif rag_type == "KnowledgeRAG":
                 is_separator_regex=False,
             )
             docs1 = text_splitter.create_documents([text_data])
-            docs = gr.generate_graph_from_text(docs1)
-            gr.ingest_data_into_graph(docs)
-            gr.init_neo4j_vector_index()
+            docs = st.session_state['gr'].generate_graph_from_text(docs1)
+            st.session_state['gr'].ingest_data_into_graph(docs)
+            st.session_state['gr'].init_neo4j_vector_index()
             st.session_state['data_ingested'] = True
             st.success("Data ingested into knowledge graph")
 
@@ -103,8 +108,8 @@ elif rag_type == "KnowledgeRAG":
         search_type = st.selectbox("Select Search Type", ["Regular Search", "Hybrid Search"])
 
         if st.button("Query Knowledge Graph"):
-            gchain = gr.graphChain()
-            gr.hybrid = (search_type == "Hybrid Search")
+            gchain = st.session_state['gr'].graphChain()
+            st.session_state['gr'].hybrid = (search_type == "Hybrid Search")
             response_kg = gchain.invoke({"question": knowledge_query})
             st.write("Knowledge Graph Response:")
             st.write(response_kg)
@@ -115,8 +120,8 @@ elif rag_type == "ImageRAG":
     image_directory = st.text_input("Enter the directory path for images")
     
     if st.button("Create Image Graph"):
-        image_graph_rag = ImageGraphRAG()
-        image_paths = image_graph_rag.create_graph_from_directory(image_directory)
+        st.session_state['image_graph_rag'] = ImageGraphRAG()
+        image_paths = st.session_state['image_graph_rag'].create_graph_from_directory(image_directory)
         st.session_state['graph_created'] = True
         st.success("Image graph created from directory")
     
@@ -131,7 +136,7 @@ elif rag_type == "ImageRAG":
                 tmp_file.write(uploaded_image.read())
                 tmp_file_path = tmp_file.name
     
-            similar_images = image_graph_rag.similarity_search(tmp_file_path, k=5)
+            similar_images = st.session_state['image_graph_rag'].similarity_search(tmp_file_path, k=5)
             st.header("Similar Images")
     
             for doc in similar_images:
@@ -139,5 +144,10 @@ elif rag_type == "ImageRAG":
     
             # Visualize graph
             if st.button("Visualize Image Graph"):
-                image_graph_rag.visualize_graph()
+                st.session_state['image_graph_rag'].visualize_graph()
                 st.success("Image graph visualized")
+
+st.write("#### Contributing")
+st.write("Contributions are welcome! Please submit a pull request or open an issue to discuss what you would like to change.")
+st.write("#### License")
+st.write("This project is licensed under the MIT License. See the LICENSE file for details.")
