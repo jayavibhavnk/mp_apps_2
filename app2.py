@@ -154,7 +154,7 @@ if st.session_state.quiz_data:
             if st.button(option, key=f"option_{option}", use_container_width=True):
                 st.session_state.selected_option = option
 
-    st.write(question_item['information'])
+    # st.write(question_item['information'])
     st.markdown("""___""")
 
     # Submission button and response logic
