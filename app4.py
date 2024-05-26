@@ -206,8 +206,3 @@ elif rag_type == "ImageRAG":
             if st.button("Visualize Image Graph"):
                 st.session_state['image_graph_rag'].visualize_graph()
                 st.success("Image graph visualized")
-
-st.write("#### Contributing")
-st.write("Contributions are welcome! Please submit a pull request or open an issue to discuss what you would like to change.")
-st.write("#### License")
-st.write("This project is licensed under the MIT License. See the LICENSE file for details.")
