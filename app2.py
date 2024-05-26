@@ -1,4 +1,3 @@
-## quiz
 import streamlit as st
 import json
 from functools import lru_cache
@@ -18,11 +17,16 @@ st.markdown("""
 div.stButton > button:first-child {
     display: block;
     margin: 0 auto;
+}
 </style>
 """, unsafe_allow_html=True)
 
 # Initialize session variables if they do not exist
-default_values = {'current_index': 0, 'current_question': 0, 'score': 0, 'selected_option': None, 'answer_submitted': False, 'quiz_data': None}
+default_values = {
+    'current_index': 0, 'current_question': 0, 'score': 0,
+    'selected_option': None, 'answer_submitted': False, 'quiz_data': None,
+    'num_questions': 5, 'difficulty': 'Easy'
+}
 for key, value in default_values.items():
     st.session_state.setdefault(key, value)
 
@@ -100,10 +104,15 @@ example:
 
 the output has to be in json format only
 
-generate 5 questions on the topic
+generate {num_questions} questions on the topic
 
 topic:
 """
+
+# Sidebar customization options
+st.sidebar.header("Quiz Customization")
+st.session_state.num_questions = st.sidebar.slider("Number of Questions", min_value=1, max_value=25, value=5)
+st.session_state.difficulty = st.sidebar.radio("Difficulty Level", options=["Easy", "Medium", "Hard"])
 
 # Title and description
 st.title("Quizzy")
@@ -113,11 +122,9 @@ st.session_state.b = st.button("Submit!")
 
 # Load quiz data
 if st.session_state.b:
-    k = query_ai(prompt_template + st.session_state.text)
-    import json
+    query = prompt_template.format(num_questions=st.session_state.num_questions) + st.session_state.text
+    k = query_ai(query)
     new_k = k[k.find("["):k.rfind("]") + 1]
-    # if new_k:
-    #     st.write(new_k)
     st.session_state.quiz_data = json.loads(new_k)
 
 # Check if quiz_data is available
@@ -131,7 +138,6 @@ if st.session_state.quiz_data:
     question_item = st.session_state.quiz_data[st.session_state.current_index]
     st.subheader(f"Question {st.session_state.current_index + 1}")
     st.title(f"{question_item['question']}")
-    # st.write(question_item['information'])
 
     st.markdown("""___""")
 
@@ -148,13 +154,11 @@ if st.session_state.quiz_data:
                 st.error(f"{label} (Incorrect answer)")
             else:
                 st.write(label)
-            # st.write(question_item['information'])
     else:
         for option in options:
             if st.button(option, key=f"option_{option}", use_container_width=True):
                 st.session_state.selected_option = option
 
-    # st.write(question_item['information'])
     st.markdown("""___""")
 
     # Submission button and response logic
