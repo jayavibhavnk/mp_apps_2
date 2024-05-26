@@ -28,7 +28,8 @@ default_values = {
     'num_questions': 5, 'difficulty': 'Easy'
 }
 for key, value in default_values.items():
-    st.session_state.setdefault(key, value)
+    if key not in st.session_state:
+        st.session_state[key] = value
 
 def restart_quiz():
     st.session_state.current_index = 0
@@ -117,11 +118,15 @@ st.session_state.difficulty = st.sidebar.radio("Difficulty Level", options=["Eas
 # Title and description
 st.title("Quizzy")
 
-st.session_state.text = st.text_area("Enter Content:")
-st.session_state.b = st.button("Submit!")
+# Debugging prints
+st.write("Session state:", st.session_state)
+
+text_area_input = st.text_area("Enter Content:")
+submit_button = st.button("Submit!")
 
 # Load quiz data
-if st.session_state.b:
+if submit_button:
+    st.session_state.text = text_area_input
     query = prompt_template.format(num_questions=st.session_state.num_questions) + st.session_state.text
     k = query_ai(query)
     new_k = k[k.find("["):k.rfind("]") + 1]
