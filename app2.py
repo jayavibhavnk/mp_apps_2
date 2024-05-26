@@ -9,7 +9,7 @@ def run():
         page_icon="❓",
     )
 
-if _name_ == "_main_":
+if __name__ == "__main__":
     run()
 
 # Custom CSS for the buttons
@@ -133,7 +133,7 @@ if st.session_state.quiz_data:
     st.title(f"{question_item['question']}")
     # st.write(question_item['information'])
 
-    st.markdown(""" _""")
+    st.markdown("""___""")
 
     # Answer selection
     options = question_item['options']
@@ -154,7 +154,7 @@ if st.session_state.quiz_data:
             if st.button(option, key=f"option_{option}", use_container_width=True):
                 st.session_state.selected_option = option
 
-    st.markdown(""" _""")
+    st.markdown("""___""")
 
     # Submission button and response logic
     if st.session_state.answer_submitted:
