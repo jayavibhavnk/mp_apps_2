@@ -3,6 +3,7 @@ import networkx as nx
 import matplotlib.pyplot as plt
 from GraphRetrieval import GraphRAG, ImageGraphRAG
 from PIL import Image
+import tempfile
 
 st.title("Graph Retrieval System")
 
@@ -35,7 +36,6 @@ if st.session_state["input_type"] == "Text":
     query = st.text_input("Enter Query")
     if st.button("Query Graph"):
         if st.session_state["gr"] is not None:
-            # st.write(st.session_state['gr'])
             result = st.session_state["gr"].queryLLM(query)
             st.write(result)
         else:
@@ -48,8 +48,12 @@ elif st.session_state["input_type"] == "PDF":
     if pdf_file is not None:
         bytes_data = pdf_file.read()
         if st.button("Create Graph from PDF"):
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".pdf") as tmp_file:
+                tmp_file.write(bytes_data)
+                tmp_file_path = tmp_file.name
+
             gr = GraphRAG()
-            gr.create_graph_from_pdf(bytes_data, similarity_threshold=similarity_threshold)
+            gr.create_graph_from_pdf(tmp_file_path, similarity_threshold=similarity_threshold)
             st.session_state["gr"] = gr
             st.success("Graph created successfully!")
 
