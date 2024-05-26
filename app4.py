@@ -7,23 +7,21 @@ from langchain_text_splitters import CharacterTextSplitter
 # Streamlit app
 st.title("GraphRetrieval Streamlit App")
 
-# Setting up environment variables
-st.header("Set Up Environment Variables")
-neo4j_uri = st.text_input("NEO4J_URI", value="add your Neo4j URI here")
-neo4j_username = st.text_input("NEO4J_USERNAME", value="add your Neo4j username here")
-neo4j_password = st.text_input("NEO4J_PASSWORD", value="add your Neo4j password here", type="password")
-openai_api_key = st.text_input("OPENAI_API_KEY", value="add your OpenAI API key here", type="password")
+# Sidebar for environment variables
+st.sidebar.header("Set Up Environment Variables")
+neo4j_uri = st.sidebar.text_input("NEO4J_URI", value="add your Neo4j URI here")
+neo4j_username = st.sidebar.text_input("NEO4J_USERNAME", value="add your Neo4j username here")
+neo4j_password = st.sidebar.text_input("NEO4J_PASSWORD", value="add your Neo4j password here", type="password")
 
-if st.button("Set Environment Variables"):
+if st.sidebar.button("Set Environment Variables"):
     os.environ["NEO4J_URI"] = neo4j_uri
     os.environ["NEO4J_USERNAME"] = neo4j_username
     os.environ["NEO4J_PASSWORD"] = neo4j_password
-    os.environ['OPENAI_API_KEY'] = openai_api_key
-    st.success("Environment variables set!")
+    st.sidebar.success("Environment variables set!")
 
 # Choose RAG type
 st.header("Choose RAG Type")
-rag_type = st.selectbox("Select RAG Type", ["GraphRAG", "KnowledgeRAG"])
+rag_type = st.selectbox("Select RAG Type", ["GraphRAG", "KnowledgeRAG", "ImageRAG"])
 
 if rag_type == "GraphRAG":
     st.header("GraphRAG")
@@ -92,3 +90,34 @@ elif rag_type == "KnowledgeRAG":
             response_kg = gchain.invoke({"question": knowledge_query})
             st.write("Knowledge Graph Response:")
             st.write(response_kg)
+
+elif rag_type == "ImageRAG":
+    # Image Graph RAG Section
+    st.header("Image Graph RAG")
+    image_directory = st.text_input("Enter the directory path for images")
+    
+    if st.button("Create Image Graph"):
+        image_graph_rag = ImageGraphRAG()
+        image_paths = image_graph_rag.create_graph_from_directory(image_directory)
+        st.success("Image graph created from directory")
+    
+        # Search similar images
+        uploaded_image = st.file_uploader("Upload an image to search for similar images", type=["jpg", "png"])
+    
+        if uploaded_image is not None:
+            import tempfile
+    
+            with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                tmp_file.write(uploaded_image.read())
+                tmp_file_path = tmp_file.name
+    
+            similar_images = image_graph_rag.similarity_search(tmp_file_path, k=5)
+            st.header("Similar Images")
+    
+            for doc in similar_images:
+                st.image(doc.metadata["path"], caption=doc.metadata["path"])
+    
+            # Visualize graph
+            if st.button("Visualize Image Graph"):
+                image_graph_rag.visualize_graph()
+                st.success("Image graph visualized")
