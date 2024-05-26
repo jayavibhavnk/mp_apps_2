@@ -3,10 +3,6 @@ import os
 from GraphRetrieval import GraphRAG, KnowledgeRAG, ImageGraphRAG
 from langchain_community.graphs import Neo4jGraph
 from langchain_text_splitters import CharacterTextSplitter
-from py2neo import Graph
-import networkx as nx
-from pyvis.network import Network
-import tempfile
 
 # Initialize session state variables
 if 'neo4j_uri' not in st.session_state:
@@ -73,34 +69,6 @@ if rag_type == "GraphRAG":
             response = st.session_state['grag'].queryLLM(query)
             st.write("Response:")
             st.write(response)
-        
-        # Visualize graph
-        if st.button("Visualize Graph"):
-            st.header("Graph Visualization")
-            graph = Graph(st.session_state['neo4j_uri'], auth=(st.session_state['neo4j_username'], st.session_state['neo4j_password']))
-            nodes_query = "MATCH (n) RETURN n LIMIT 100"
-            relationships_query = "MATCH ()-[r]->() RETURN r LIMIT 100"
-            
-            nodes = graph.run(nodes_query).data()
-            relationships = graph.run(relationships_query).data()
-            
-            G = nx.Graph()
-            
-            for node in nodes:
-                node = node['n']
-                G.add_node(node.identity, label=node.labels[0], title=node['name'] if 'name' in node else "")
-                
-            for rel in relationships:
-                rel = rel['r']
-                G.add_edge(rel.start_node.identity, rel.end_node.identity, title=rel.type)
-                
-            net = Network(notebook=True)
-            net.from_nx(G)
-            
-            path = tempfile.mktemp(suffix=".html")
-            net.show(path)
-            with open(path, 'r', encoding='utf-8') as f:
-                components.html(f.read(), height=600)
 
 elif rag_type == "KnowledgeRAG":
     st.header("KnowledgeRAG")
@@ -145,34 +113,6 @@ elif rag_type == "KnowledgeRAG":
             response_kg = gchain.invoke({"question": knowledge_query})
             st.write("Knowledge Graph Response:")
             st.write(response_kg)
-        
-        # Visualize graph
-        if st.button("Visualize Graph"):
-            st.header("Graph Visualization")
-            graph = Graph(st.session_state['neo4j_uri'], auth=(st.session_state['neo4j_username'], st.session_state['neo4j_password']))
-            nodes_query = "MATCH (n) RETURN n LIMIT 100"
-            relationships_query = "MATCH ()-[r]->() RETURN r LIMIT 100"
-            
-            nodes = graph.run(nodes_query).data()
-            relationships = graph.run(relationships_query).data()
-            
-            G = nx.Graph()
-            
-            for node in nodes:
-                node = node['n']
-                G.add_node(node.identity, label=node.labels[0], title=node['name'] if 'name' in node else "")
-                
-            for rel in relationships:
-                rel = rel['r']
-                G.add_edge(rel.start_node.identity, rel.end_node.identity, title=rel.type)
-                
-            net = Network(notebook=True)
-            net.from_nx(G)
-            
-            path = tempfile.mktemp(suffix=".html")
-            net.show(path)
-            with open(path, 'r', encoding='utf-8') as f:
-                components.html(f.read(), height=600)
 
 elif rag_type == "ImageRAG":
     # Image Graph RAG Section
@@ -206,3 +146,4 @@ elif rag_type == "ImageRAG":
             if st.button("Visualize Image Graph"):
                 st.session_state['image_graph_rag'].visualize_graph()
                 st.success("Image graph visualized")
+
