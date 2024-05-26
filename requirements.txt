@@ -1,3 +1,4 @@
 GraphRetrieval
 matplotlib
 torchvision
+youtube_transcript_api
