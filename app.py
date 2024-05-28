@@ -87,13 +87,4 @@ elif st.session_state["input_type"] == "Images":
             nx.draw(igr.graph, pos, with_labels=True, ax=ax)
             st.pyplot(fig)
 
-    query_image = st.file_uploader("Upload Query Image", type=["png", "jpg", "jpeg"], accept_multiple_files=False)
-    if st.button("Query Graph"):
-        if st.session_state["igr"] is not None and query_image is not None:
-            query_image_path = query_image.name
-            result = st.session_state["igr"].similarity_search(query_image_path, k=5)
-            st.write(f"Top 5 similar images for the query image '{query_image_path}':")
-            for doc in result:
-                st.image(doc.page_content, caption=doc.page_content, use_column_width=True)
-        else:
-            st.warning("Please create a graph and upload a query image.")
+
